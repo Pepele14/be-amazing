@@ -10,8 +10,13 @@ require("./db");
 const express = require("express");
 const logger = require("morgan");
 const { isAuthenticated } = require("./middleware/jwt.middleware");
+const cors = require("cors");
 
 const app = express();
+
+// Use the cors middleware without any options to allow
+// requests from any IP address and domain.
+app.use(cors());
 
 app.use(logger("dev"));
 app.use(express.static("public"));
