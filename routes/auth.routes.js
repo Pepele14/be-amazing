@@ -71,7 +71,7 @@ router.post("/signup", (req, res, next) => {
 // POST  /auth/login - Verifies email and password and returns a JWT
 router.post("/login", (req, res, next) => {
   const { email, password } = req.body;
-
+  console.log(req.body);
   // Check if email or password are provided as empty string
   if (email === "" || password === "") {
     res.status(400).json({ message: "Provide email and password." });
@@ -117,7 +117,10 @@ router.post("/login", (req, res, next) => {
         res.status(401).json({ message: "Unable to authenticate the user" });
       }
     })
-    .catch((err) => res.status(500).json({ message: "Internal Server Error" }));
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ message: "Internal Server Error" });
+    });
 });
 
 // GET  /auth/verify  -  Used to verify JWT stored on the client
