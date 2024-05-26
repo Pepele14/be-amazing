@@ -34,8 +34,10 @@ require("./config")(app);
 // app.use("/api", isAuthenticated, taskRouter);
 
 const authRouter = require("./routes/auth.routes");
-app.use("/auth", authRouter);
+const moodRouter = require("./routes/mood.routes");
 
+app.use("/auth", authRouter);
+app.use("/api", moodRouter);
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
 
