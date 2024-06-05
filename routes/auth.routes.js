@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
+const axios = require("axios");
 
 const router = express.Router();
 const { isAuthenticated } = require("./../middleware/jwt.middleware.js");
@@ -139,6 +140,38 @@ router.get("/verify", isAuthenticated, async (req, res, next) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+router.post("/api/get-feedback", async (req, res) => {
+  const { diaryText } = req.body;
+  const apiKey = process.env.VITE_OPENAI_API_KEY;
+
+  const options = {
+    method: "POST",
+    url: "https://chat-gpt26.p.rapidapi.com/",
+    headers: {
+      "content-type": "application/json",
+      "X-RapidAPI-Key": apiKey,
+      "X-RapidAPI-Host": "chat-gpt26.p.rapidapi.com",
+    },
+    data: {
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "user",
+          content: diaryText,
+        },
+      ],
+    },
+  };
+
+  try {
+    const response = await axios.request(options);
+    res.json(response.data.choices[0].message.content);
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
+    res.status(500).send("Server error");
   }
 });
 
