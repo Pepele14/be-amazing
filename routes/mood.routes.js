@@ -1,12 +1,19 @@
 const express = require("express");
 const Mood = require("../models/Mood.model");
+const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 const router = express.Router();
 
-router.post("/moods", async (req, res) => {
+router.post("/moods", isAuthenticated, async (req, res) => {
+  console.log("Received POST request for /moods");
+
   try {
-    const mood = new Mood({ mood: req.body.mood });
-    const savedMood = await mood.save();
+    const { mood } = req.body;
+    const userId = req.payload._id;
+    console.log("User ID:", userId, "Mood:", mood);
+
+    const newMood = new Mood({ mood, userId });
+    const savedMood = await newMood.save();
     res.json(savedMood);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -14,9 +21,14 @@ router.post("/moods", async (req, res) => {
 });
 
 // Route to get overall mood distribution
-router.get("/distribution", async (req, res) => {
+router.get("/distribution", isAuthenticated, async (req, res) => {
+  console.log("Received GET request for /distribution");
+  console.log("Payload:", req.payload);
+  const userId = req.payload._id;
+  console.log("User ID:", userId);
   try {
     const moods = await Mood.aggregate([
+      { $match: { userId: userId } },
       {
         $group: {
           _id: "$mood",
@@ -24,6 +36,7 @@ router.get("/distribution", async (req, res) => {
         },
       },
     ]);
+    console.log("Aggregated mood data:", moods);
     res.json(moods);
   } catch (err) {
     console.error(err);
@@ -32,15 +45,17 @@ router.get("/distribution", async (req, res) => {
 });
 
 // Route to get weekly mood distribution
-router.get("/weekly-distribution", async (req, res) => {
+router.get("/weekly-distribution", isAuthenticated, async (req, res) => {
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
   try {
+    const userId = req.payload._id;
     const weeklyMoods = await Mood.aggregate([
       {
         $match: {
           date: { $gte: oneWeekAgo },
+          userId: userId,
         },
       },
       {

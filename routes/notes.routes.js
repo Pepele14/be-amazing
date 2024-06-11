@@ -53,7 +53,8 @@ router.get("/public", async (req, res) => {
 // Route to get all private notes
 router.get("/private", isAuthenticated, async (req, res) => {
   try {
-    const notes = await PrivateNote.find();
+    const userId = req.payload._id;
+    const notes = await PrivateNote.find({ userId });
     res.json(notes);
   } catch (err) {
     console.error(err);

@@ -21,7 +21,6 @@ const notesRouter = require("./routes/notes.routes");
 
 app.use("/auth", authRouter);
 app.use("/api", moodRouter);
-app.use("/api/distribution", notesRouter);
 app.use("/api/notes", notesRouter);
 
 require("./error-handling")(app);
