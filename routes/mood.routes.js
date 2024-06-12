@@ -55,8 +55,8 @@ router.get("/weekly-distribution", isAuthenticated, async (req, res) => {
     const weeklyMoods = await Mood.aggregate([
       {
         $match: {
+          userId: new mongoose.Types.ObjectId(userId),
           date: { $gte: oneWeekAgo },
-          userId: userId,
         },
       },
       {
