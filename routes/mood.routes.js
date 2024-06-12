@@ -1,6 +1,7 @@
 const express = require("express");
 const Mood = require("../models/Mood.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
+const mongoose = require("mongoose");
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router.get("/distribution", isAuthenticated, async (req, res) => {
   console.log("User ID:", userId);
   try {
     const moods = await Mood.aggregate([
-      { $match: { userId: userId } },
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       {
         $group: {
           _id: "$mood",
@@ -39,7 +40,7 @@ router.get("/distribution", isAuthenticated, async (req, res) => {
     console.log("Aggregated mood data:", moods);
     res.json(moods);
   } catch (err) {
-    console.error(err);
+    console.error("Aggregation error:", err);
     res.status(500).json({ message: err.message });
   }
 });
