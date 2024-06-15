@@ -1,6 +1,7 @@
 const express = require("express");
 const PrivateNote = require("../models/PrivateNote.model");
 const PublicNote = require("../models/PublicNote.model");
+const Like = require("../models/Like.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 const router = express.Router();
@@ -42,8 +43,56 @@ router.post("/public", async (req, res) => {
 // Route to get all public notes
 router.get("/public", async (req, res) => {
   try {
-    const publicNotes = await PublicNote.find();
-    res.json(publicNotes);
+    const { page = 1, limit = 8 } = req.query; //In order to add pagination
+    const publicNotes = await PublicNote.find()
+      .sort({ date: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    const notesWithLikes = await Promise.all(
+      publicNotes.map(async (note) => {
+        const likeCount = await Like.countDocuments({ noteId: note._id });
+        return { ...note.toObject(), likeCount };
+      })
+    );
+
+    res.json(notesWithLikes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Route to like/unlike a note
+router.post("/public/:noteId/like", isAuthenticated, async (req, res) => {
+  try {
+    const { noteId } = req.params;
+    const userId = req.payload._id;
+
+    const existingLike = await Like.findOne({ userId, noteId });
+
+    if (existingLike) {
+      // Unlike the note
+      await Like.deleteOne({ userId, noteId });
+      res.status(200).json({ message: "Like removed" });
+    } else {
+      // Like the note
+      const like = new Like({ userId, noteId });
+      await like.save();
+      res.status(201).json({ message: "Like added" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Route to get likes for a user
+router.get("/public/likes", isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.payload._id;
+    const likes = await Like.find({ userId });
+    res.json(likes);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: err.message });
