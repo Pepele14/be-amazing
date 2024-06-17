@@ -44,6 +44,7 @@ router.post("/public", async (req, res) => {
 router.get("/public", async (req, res) => {
   try {
     const { page = 1, limit = 8 } = req.query; //In order to add pagination
+    console.log(`Fetching public notes - Page: ${page}, Limit: ${limit}`);
     const publicNotes = await PublicNote.find()
       .sort({ date: -1 })
       .skip((page - 1) * limit)
@@ -56,6 +57,7 @@ router.get("/public", async (req, res) => {
       })
     );
 
+    console.log(`Returning ${notesWithLikes.length} notes`);
     res.json(notesWithLikes);
   } catch (err) {
     console.error(err);
@@ -74,11 +76,13 @@ router.post("/public/:noteId/like", isAuthenticated, async (req, res) => {
     if (existingLike) {
       // Unlike the note
       await Like.deleteOne({ userId, noteId });
+      const likeCount = await Like.countDocuments({ noteId });
       res.status(200).json({ message: "Like removed" });
     } else {
       // Like the note
       const like = new Like({ userId, noteId });
       await like.save();
+      const likeCount = await Like.countDocuments({ noteId });
       res.status(201).json({ message: "Like added" });
     }
   } catch (err) {
