@@ -2,6 +2,7 @@ const express = require("express");
 const PrivateNote = require("../models/PrivateNote.model");
 const PublicNote = require("../models/PublicNote.model");
 const Like = require("../models/Like.model");
+const Comment = require("../models/Comment.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 const router = express.Router();
@@ -73,6 +74,41 @@ router.get("/public/:noteId", async (req, res) => {
       return res.status(404).json({ message: "Note not found" });
     }
     res.json(note);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Route to get comments for a specific note
+router.get("/public/:noteId/comments", async (req, res) => {
+  try {
+    const { noteId } = req.params;
+    const comments = await Comment.find({ noteId }).populate(
+      "userId",
+      "username"
+    );
+    res.json(comments);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Route to add a comment to a specific note
+router.post("/public/:noteId/comments", isAuthenticated, async (req, res) => {
+  try {
+    const { noteId } = req.params;
+    const { content } = req.body;
+    const userId = req.payload._id;
+
+    if (!content) {
+      return res.status(400).json({ message: "Content is required" });
+    }
+
+    const comment = new Comment({ noteId, userId, content });
+    const savedComment = await comment.save();
+    res.status(201).json(savedComment);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: err.message });
