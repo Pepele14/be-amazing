@@ -65,6 +65,20 @@ router.get("/public", async (req, res) => {
   }
 });
 
+// Route to get a single public note
+router.get("/public/:noteId", async (req, res) => {
+  try {
+    const note = await PublicNote.findById(req.params.noteId);
+    if (!note) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+    res.json(note);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Route to like/unlike a note
 router.post("/public/:noteId/like", isAuthenticated, async (req, res) => {
   try {
