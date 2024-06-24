@@ -73,4 +73,27 @@ router.get("/weekly-distribution", isAuthenticated, async (req, res) => {
   }
 });
 
+// Route to get the latest mood for each user
+router.get("/latest", isAuthenticated, async (req, res) => {
+  console.log("heyhey");
+
+  try {
+    console.log("try handler works");
+    const userId = req.payload._id;
+    console.log(userId);
+
+    const latestMood = await Mood.findOne({ user: userId }).sort({ date: -1 });
+    console.log(latestMood);
+
+    if (!latestMood) {
+      return res.status(404).json({ msg: "No mood entries found" });
+    }
+
+    res.json(latestMood);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 module.exports = router;
