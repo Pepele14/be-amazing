@@ -74,7 +74,7 @@ router.get("/weekly-distribution", isAuthenticated, async (req, res) => {
 });
 
 // Route to get the latest mood for each user
-router.get("/latest", isAuthenticated, async (req, res) => {
+router.get("/moods/latest", isAuthenticated, async (req, res) => {
   console.log("Fetching the latest mood for the user");
 
   try {
