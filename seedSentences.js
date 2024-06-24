@@ -13,7 +13,7 @@ const sentences = [
 
 const seedSentences = async () => {
   try {
-    await Sentence.deleteMany(); // clear the collection if needed
+    // await Sentence.deleteMany(); // clear the collection if needed
     await Sentence.insertMany(sentences.map((text) => ({ text })));
     console.log("Sentences have been added");
     process.exit();

@@ -17,12 +17,13 @@ require("./config")(app);
 
 const authRouter = require("./routes/auth.routes");
 const notesRouter = require("./routes/notes.routes");
-
 const moodRouter = require("./routes/mood.routes");
+const sentenceRouter = require("./routes/sentence.routes");
 
 app.use("/auth", authRouter);
 app.use("/api", moodRouter);
 app.use("/api/notes", notesRouter);
+app.use("/api/sentences", sentenceRouter);
 
 require("./error-handling")(app);
 
