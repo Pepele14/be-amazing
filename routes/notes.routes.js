@@ -11,12 +11,12 @@ console.log("Notes router loaded");
 // Route to save a private note
 router.post("/private", isAuthenticated, async (req, res) => {
   try {
-    const { content } = req.body;
+    const { content, tags } = req.body;
     const userId = req.payload._id; // Get userId from payload
     if (!content) {
       return res.status(400).json({ message: "Content is required" });
     }
-    const note = new PrivateNote({ content, userId });
+    const note = new PrivateNote({ content, userId, tags });
     const savedNote = await note.save();
     res.status(201).json(savedNote);
   } catch (err) {
