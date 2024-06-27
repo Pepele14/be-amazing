@@ -28,11 +28,11 @@ router.post("/private", isAuthenticated, async (req, res) => {
 // Route to save a public note
 router.post("/public", async (req, res) => {
   try {
-    const { content } = req.body;
+    const { content, tags } = req.body;
     if (!content) {
       return res.status(400).json({ message: "Content is required" });
     }
-    const note = new PublicNote({ content });
+    const note = new PublicNote({ content, tags });
     const savedNote = await note.save();
     res.status(201).json(savedNote);
   } catch (err) {
