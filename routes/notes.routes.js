@@ -141,6 +141,35 @@ router.post("/public/:noteId/like", isAuthenticated, async (req, res) => {
   }
 });
 
+// Route to delete a note (private or public)
+router.delete("/notes/:noteId", isAuthenticated, async (req, res) => {
+  const { noteId } = req.params;
+  const userId = req.payload._id;
+
+  try {
+    // Check if the note exists and belongs to the authenticated user
+    const privateNote = await PrivateNote.findOne({ _id: noteId, userId });
+    if (privateNote) {
+      await PrivateNote.deleteOne({ _id: noteId });
+      return res
+        .status(200)
+        .json({ message: "Private note deleted successfully" });
+    }
+
+    const publicNote = await PublicNote.findOne({ _id: noteId });
+    if (!publicNote) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    // Handle deletion of public note
+    await PublicNote.deleteOne({ _id: noteId });
+    res.status(200).json({ message: "Public note deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Route to get likes for a user
 router.get("/public/likes", isAuthenticated, async (req, res) => {
   try {
@@ -175,6 +204,16 @@ router.post("/api/notes", async (req, res) => {
     res.status(201).send(newNote);
   } catch (error) {
     res.status(400).send({ error: "Error saving note" });
+  }
+});
+
+//route to get all private notes
+router.get("/api/notes/private", async (req, res) => {
+  try {
+    const notes = await PrivateNote.find();
+    res.status(200).json(notes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
